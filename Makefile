@@ -1,23 +1,22 @@
-
 NAME = cub3d
-SRCS = main.c
-MLX_DIR = ./minilibx-linux
-MLX = -L$(MLX_DIR) -lmlx_Linux -lXext -lX11 -lm -lz -fsanitize=address
-
-OBJS = $(SRCS:.c=.o)
-
-%.o: %.c
-	gcc -c $< -o $@
+SRC = main.c
+OBJ = $(SRC:.c=.o)
+MLX_LIB = libmlx.a -framework OpenGL -framework AppKit -fsanitize=address -g3
 
 all: $(NAME)
 
-$(NAME): $(OBJS)
-	gcc $(OBJS) -o $(NAME) $(MLX)
+$(NAME): $(OBJ)
+	cc $(OBJ) $(MLX_LIB) -o $(NAME)
+
+%.o: %.c
+	cc -c $< -o $@
 
 clean:
-	rm -f $(OBJS)
+	rm -f $(OBJ)
 
 fclean: clean
 	rm -f $(NAME)
 
 re: fclean all
+
+.PHONY: all clean fclean re
