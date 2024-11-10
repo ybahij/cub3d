@@ -11,6 +11,7 @@
 #define WINDOW_HEIGHT 800
 #define MAP_SIZE 100
 #define PI 3.14159265358979323846
+#define FOV 60 * (PI / 180)
 
 typedef struct s_player
 {
@@ -121,268 +122,113 @@ void draw_line(void *mlx, void *mlx_win, int x0, int y0, int x1, int y1, int col
 // }
 void draw_3d_view(t_player *player)
 {
-    static void *screen_img = NULL;
-    static int *screen_data = NULL;
-    int bpp, size_line, endian;
+    int color;
+    static void *img = NULL;
+    static int *img_data = NULL;
+    int bpp, size_line, endian, map_x, map_y, step_x, step_y, side, hit, line_height, draw_start, draw_end, y, x, pixel;
+    double angle_increment, ray_angle, ray_dir_x, ray_dir_y, delta_dist_x, delta_dist_y, side_dist_x, side_dist_y, perp_wall_dist;
 
-    // Initialize screen buffer only once
-    if (!screen_img)
+    if (!img)
     {
-        screen_img = mlx_new_image(player->mlx, WINDOW_WIDTH, WINDOW_HEIGHT);
-        if (!screen_img)
-            return;
-        screen_data = (int *)mlx_get_data_addr(screen_img, &bpp, &size_line, &endian);
-        if (!screen_data)
-            return;
+        img = mlx_new_image(player->mlx, WINDOW_WIDTH, WINDOW_HEIGHT);
+        img_data = (int *)mlx_get_data_addr(img, &bpp, &size_line, &endian);
     }
+    memset(img_data, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(int));
 
-    // Pre-calculate constants
-    const double half_height = WINDOW_HEIGHT / 2.0;
-    const int screen_size = WINDOW_WIDTH * WINDOW_HEIGHT;
+    // Define the angle increment based on field of view
+    angle_increment = FOV / WINDOW_WIDTH; // FOV in radians
 
-    // Clear screen buffer (using int pointer for faster clearing)
-    int *end = screen_data + screen_size;
-    int *ptr = screen_data;
-    while (ptr < end)
-        *ptr++ = 0;
+    x = 0;
+    while (x < WINDOW_WIDTH) {
+        // Calculate the ray angle for each column, centered around player's facing direction
+        ray_angle = - (FOV / 2) + x * angle_increment;
 
-    int x = 0;
-    while (x < WINDOW_WIDTH)
-    {
-        // Optimize ray direction calculation
-        const double camera_x = (2.0 * x / WINDOW_WIDTH) - 1;
-        const double ray_dir_x = player->dir_x + player->dir_y * camera_x * 0.66;
-        const double ray_dir_y = player->dir_y - player->dir_x * camera_x * 0.66;
+        // Calculate ray direction based on angle
+        ray_dir_x = cos(ray_angle) * player->dir_x - sin(ray_angle) * player->dir_y;
+        ray_dir_y = sin(ray_angle) * player->dir_x + cos(ray_angle) * player->dir_y;
 
-        // Current map position
-        int map_x = (int)player->px;
-        int map_y = (int)player->py;
+        // Map position (grid) 
+        map_y = (int)player->py;
+        map_x = (int)player->px;
 
-        // Optimize delta distance calculation
-				double delta_dist_x, delta_dist_y;
-				if (fabs(ray_dir_x) < 1e-8)
-					delta_dist_x = 1e8;
-				else
-					delta_dist_x = fabs(1 / ray_dir_x);
+        delta_dist_x = fabs(1 / ray_dir_x);
+        delta_dist_y = fabs(1 / ray_dir_y);
 
-				if (fabs(ray_dir_y) < 1e-8)
-					delta_dist_y = 1e8;
-				else
-					delta_dist_y = fabs(1 / ray_dir_y);
+        // Calculate steps
+        if (ray_dir_x < 0) {
+            step_x = -1;
+            side_dist_x = (player->px - map_x) * delta_dist_x;
+        } else {
+            step_x = 1;
+            side_dist_x = (map_x + 1.0 - player->px) * delta_dist_x;
+        }
+        if (ray_dir_y < 0) {
+            step_y = -1;
+            side_dist_y = (player->py - map_y) * delta_dist_y;
+        } 
+		else {
+            step_y = 1;
+            side_dist_y = (map_y + 1.0 - player->py) * delta_dist_y;
+        }
 
-        // Optimize step and side_dist calculation
-        const int step_x = (ray_dir_x < 0) ? -1 : 1;
-        const int step_y = (ray_dir_y < 0) ? -1 : 1;
-        const double player_offset_x = (ray_dir_x < 0) ? player->px - map_x : map_x + 1.0 - player->px;
-        const double player_offset_y = (ray_dir_y < 0) ? player->py - map_y : map_y + 1.0 - player->py;
-        double side_dist_x = player_offset_x * delta_dist_x;
-        double side_dist_y = player_offset_y * delta_dist_y;
-
-        // DDA optimization
-        int side = 0;
-        while (1)
-        {
-            if (side_dist_x < side_dist_y)
-            {
+        hit = 0;
+        while (hit == 0) {
+            if (side_dist_x < side_dist_y) {
                 side_dist_x += delta_dist_x;
                 map_x += step_x;
                 side = 0;
-            }
-            else
-            {
+            } else {
                 side_dist_y += delta_dist_y;
                 map_y += step_y;
                 side = 1;
             }
-
-            if (map_y >= 0 && map_y < player->map_height &&
-                map_x >= 0 && map_x < player->map_width &&
-                player->map[map_y][map_x] == '1')
-                break;
+            if (player->map[map_y][map_x] == '1')
+                hit = 1;
         }
 
-        // Optimize wall distance calculation
-        const double perp_wall_dist = (side == 0) ?
-            (side_dist_x - delta_dist_x) : (side_dist_y - delta_dist_y);
+        if (side == 0)
+            perp_wall_dist = (map_x - player->px + (1 - step_x) / 2) / ray_dir_x;
+        else
+            perp_wall_dist = (map_y - player->py + (1 - step_y) / 2) / ray_dir_y;
 
-        // Optimize line height calculation
-        const int line_height = (int)(WINDOW_HEIGHT / perp_wall_dist);
-        const int half_line = line_height >> 1;
-
-        // Calculate drawing bounds
-        int draw_start = (int)(-half_line + half_height);
+        // Calculate wall height
+        line_height = (int)(WINDOW_HEIGHT / perp_wall_dist);
+        draw_start = -line_height / 2 + WINDOW_HEIGHT / 2;
         if (draw_start < 0)
             draw_start = 0;
-
-        int draw_end = (int)(half_line + half_height);
+        draw_end = line_height / 2 + WINDOW_HEIGHT / 2;
         if (draw_end >= WINDOW_HEIGHT)
             draw_end = WINDOW_HEIGHT - 1;
 
-        // Pre-calculate screen offset
-        const int screen_offset = x;
-        const int color = side ? 0x00FF0000 : 0x00CC0000;
+		if (side == 1)
+			color = 0x00FF0000;
+		else
+			color = 0x00CC0000;
 
-        // Draw walls with optimized memory access
-        int y = draw_start;
-        int *column = screen_data + (y * WINDOW_WIDTH) + screen_offset;
-        while (y < draw_end)
-        {
-            *column = color;
-            column += WINDOW_WIDTH;
+        y = draw_start;
+        while (y < draw_end) {
+            img_data[y * WINDOW_WIDTH + x] = color;
             y++;
         }
 
-        // Draw ceiling
         y = 0;
-        column = screen_data + screen_offset;
-        while (y < draw_start)
-        {
-            *column = 0x00404040;
-            column += WINDOW_WIDTH;
+        while (y < draw_start) {
+            img_data[y * WINDOW_WIDTH + x] = 0x00404040; // Ceiling
             y++;
         }
 
-        // Draw floor
-        column = screen_data + (draw_end * WINDOW_WIDTH) + screen_offset;
-        while (y < WINDOW_HEIGHT)
-        {
-            *column = 0x00808080;
-            column += WINDOW_WIDTH;
+        y = draw_end;
+        while (y < WINDOW_HEIGHT) {
+            img_data[y * WINDOW_WIDTH + x] = 0x00808080; // Floor
             y++;
         }
 
         x++;
     }
-
-    // Put the rendered image to window
-    if (screen_img)
-        mlx_put_image_to_window(player->mlx, player->mlx_win, screen_img, 0, 0);
+    player->screen_img = img;
+    mlx_put_image_to_window(player->mlx, player->mlx_win, img, 0, 0);
 }
 
-// void draw_3d_view(t_player *player)
-// {
-//     if (!player->screen_img) {
-//         player->screen_img = mlx_new_image(player->mlx, WINDOW_WIDTH, WINDOW_HEIGHT);
-//         player->screen_data = (int *)mlx_get_data_addr(player->screen_img, &(int){0}, &(int){0}, &(int){0});
-//     }
-
-//     // Clear screen buffer
-//     memset(player->screen_data, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(int));
-
-//     // Cast a ray for each column of the screen
-//     for (int x = 0; x < WINDOW_WIDTH; x++) {
-//         // Calculate ray position and direction
-//         double camera_x = 2 * x / (double)WINDOW_WIDTH - 1;
-//         double ray_dir_x = player->dir_x + player->dir_y * camera_x * 0.66; // Adjust FOV
-//         double ray_dir_y = player->dir_y - player->dir_x * camera_x * 0.66;
-
-//         // Current map position
-//         int map_x = (int)player->px;
-//         int map_y = (int)player->py;
-
-//         // Length of ray from current position to next x or y-side
-//         double delta_dist_x = fabs(1 / ray_dir_x);
-//         double delta_dist_y = fabs(1 / ray_dir_y);
-
-//         // Calculate step and initial side_dist
-//         int step_x;
-//         int step_y;
-//         double side_dist_x;
-//         double side_dist_y;
-
-//         if (ray_dir_x < 0) {
-//             step_x = -1;
-//             side_dist_x = (player->px - map_x) * delta_dist_x;
-//         } else {
-//             step_x = 1;
-//             side_dist_x = (map_x + 1.0 - player->px) * delta_dist_x;
-//         }
-//         if (ray_dir_y < 0) {
-//             step_y = -1;
-//             side_dist_y = (player->py - map_y) * delta_dist_y;
-//         } else {
-//             step_y = 1;
-//             side_dist_y = (map_y + 1.0 - player->py) * delta_dist_y;
-//         }
-
-//         // Perform DDA (Digital Differential Analysis)
-//         int hit = 0;
-//         int side; // 0 for x-side, 1 for y-side
-//         while (hit == 0) {
-//             if (side_dist_x < side_dist_y) {
-//                 side_dist_x += delta_dist_x;
-//                 map_x += step_x;
-//                 side = 0;
-//             } else {
-//                 side_dist_y += delta_dist_y;
-//                 map_y += step_y;
-//                 side = 1;
-//             }
-//             if (player->map[map_y][map_x] == '1')
-//                 hit = 1;
-//         }
-
-//         // Calculate distance to the wall
-//         double perp_wall_dist;
-//         if (side == 0)
-//             perp_wall_dist = (map_x - player->px + (1 - step_x) / 2) / ray_dir_x;
-//         else
-//             perp_wall_dist = (map_y - player->py + (1 - step_y) / 2) / ray_dir_y;
-
-//         // Calculate wall height
-//         int line_height = (int)(WINDOW_HEIGHT / perp_wall_dist);
-//         int draw_start = -line_height / 2 + WINDOW_HEIGHT / 2;
-//         if (draw_start < 0)
-//             draw_start = 0;
-//         int draw_end = line_height / 2 + WINDOW_HEIGHT / 2;
-//         if (draw_end >= WINDOW_HEIGHT)
-//             draw_end = WINDOW_HEIGHT - 1;
-
-//         // Choose wall color based on side
-//         int color = side == 1 ? 0x00FF0000 : 0x00CC0000;
-
-//         // Draw the vertical line
-//         for (int y = draw_start; y < draw_end; y++) {
-//             player->screen_data[y * WINDOW_WIDTH + x] = color;
-//         }
-
-//         // Draw floor and ceiling
-//         for (int y = 0; y < draw_start; y++)
-//             player->screen_data[y * WINDOW_WIDTH + x] = 0x00404040; // Ceiling
-//         for (int y = draw_end; y < WINDOW_HEIGHT; y++)
-//             player->screen_data[y * WINDOW_WIDTH + x] = 0x00808080; // Floor
-//     }
-
-//     // Put the rendered image to window
-//     mlx_put_image_to_window(player->mlx, player->mlx_win, player->screen_img, 0, 0);
-// }
-
-// void cast_rays(void *mlx, void *mlx_win, int x0, int y0, int x1, int y1, int color, char **map, t_player *player)
-// {
-// 	// mlx_clear_window(mlx, mlx_win);
-// 	int i, j;
-// 	for (i = 0; i < player->map_height; i++)
-// 	{
-// 		for (j = 0; j < player->map_width; j++)
-// 		{
-// 			if (i >= 0 && i < player->map_height && j >= 0 && j < player->map_width && player->map[i][j] == '1')
-// 			{
-// 				int x0 = j * MAP_SIZE;
-// 				int y0 = i * MAP_SIZE;
-// 				int x1 = x0 + MAP_SIZE;
-// 				int y1 = y0;
-// 				int x2 = x1;
-// 				int y2 = y1 + MAP_SIZE;
-// 				int x3 = x0;
-// 				int y3 = y2;
-// 				draw_line(mlx, mlx_win, x0, y0, x1, y1, 0x00FFFFFF, player->map);
-// 				draw_line(mlx, mlx_win, x1, y1, x2, y2, 0x00FFFFFF, player->map);
-// 				draw_line(mlx, mlx_win, x2, y2, x3, y3, 0x00FFFFFF, player->map);
-// 				draw_line(mlx, mlx_win, x3, y3, x0, y0, 0x00FFFFFF, player->map);
-// 			}
-// 		}
-// 	}
-// }
 
 
 // void draw_view_cone(void *mlx, void *mlx_win, int center_x, int center_y, double dir_x, double dir_y, double fov, int length, int color, char **map, t_player *player)
@@ -544,19 +390,19 @@ int key_press(int keycode, void *params)
 	}
 	else if (keycode == 100) // D
 	{
-		move_player(player, player->dir_y * MOVE_SPEED, -player->dir_x * MOVE_SPEED);
+		move_player(player, -player->dir_y * MOVE_SPEED, player->dir_x * MOVE_SPEED);
 	}
 	else if (keycode == 97) // A
 	{
-		move_player(player, -player->dir_y * MOVE_SPEED, player->dir_x * MOVE_SPEED);
+		move_player(player, player->dir_y * MOVE_SPEED, -player->dir_x * MOVE_SPEED);
 	}
 	else if (keycode == 65361) // LEFT
 	{
-		rotate_player(player, ROTATE_SPEED);
+		rotate_player(player, -ROTATE_SPEED);
 	}
 	else if (keycode == 65363) // RIGHT
 	{
-		rotate_player(player, -ROTATE_SPEED);
+		rotate_player(player, ROTATE_SPEED);
 	}
 	return (0);
 }
