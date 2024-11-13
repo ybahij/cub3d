@@ -359,13 +359,13 @@ void draw_3d_view(t_player *player) {
         north_texture.img = mlx_xpm_file_to_image(player->mlx, "./north.xpm", &north_texture.width, &north_texture.height);
         north_texture.data = (int *)mlx_get_data_addr(north_texture.img, &bpp, &size_line, &endian);
 
-        south_texture.img = mlx_xpm_file_to_image(player->mlx, "./east.xpm", &south_texture.width, &south_texture.height);
+        south_texture.img = mlx_xpm_file_to_image(player->mlx, "./south.xpm", &south_texture.width, &south_texture.height);
         south_texture.data = (int *)mlx_get_data_addr(south_texture.img, &bpp, &size_line, &endian);
 
-        west_texture.img = mlx_xpm_file_to_image(player->mlx, "./north.xpm", &west_texture.width, &west_texture.height);
+        west_texture.img = mlx_xpm_file_to_image(player->mlx, "./west.xpm", &west_texture.width, &west_texture.height);
         west_texture.data = (int *)mlx_get_data_addr(west_texture.img, &bpp, &size_line, &endian);
 
-        east_texture.img = mlx_xpm_file_to_image(player->mlx, "east.xpm", &east_texture.width, &east_texture.height);
+        east_texture.img = mlx_xpm_file_to_image(player->mlx, "./east.xpm", &east_texture.width, &east_texture.height);
         east_texture.data = (int *)mlx_get_data_addr(east_texture.img, &bpp, &size_line, &endian);
     }
     memset(img_data, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(int));
@@ -452,9 +452,14 @@ void draw_3d_view(t_player *player) {
 
         // Draw vertical line for the wall slice using texture
         y = draw_start;
-        while (y < draw_end) {
+        while (y < draw_end)
+				{
             int tex_y = (y - draw_start) * texture->height / line_height;
-            int tex_x = (side == 0) ? (int)(((player->px + perp_wall_dist * ray_dir_y) - (int)(player->px + perp_wall_dist * ray_dir_y)) * texture->width) : (int)(((player->py + perp_wall_dist * ray_dir_x) - (int)(player->py + perp_wall_dist * ray_dir_x)) * texture->width);
+						int tex_x;
+						if (side == 0)
+							tex_x = (int)(((player->px + perp_wall_dist * ray_dir_y) - (int)(player->px + perp_wall_dist * ray_dir_y)) * texture->width);
+						else
+							tex_x = (int)(((player->py + perp_wall_dist * ray_dir_x) - (int)(player->py + perp_wall_dist * ray_dir_x)) * texture->width);
             color = texture->data[tex_y * texture->width + tex_x];
             img_data[y * WINDOW_WIDTH + x] = color;
             y++;
