@@ -357,15 +357,31 @@ void draw_3d_view(t_player *player) {
 
         // Load textures
         north_texture.img = mlx_xpm_file_to_image(player->mlx, "./north.xpm", &north_texture.width, &north_texture.height);
+        if (!north_texture.img) {
+            printf("Failed to load north_texture.img\n");
+            exit(1);
+        }
         north_texture.data = (int *)mlx_get_data_addr(north_texture.img, &bpp, &size_line, &endian);
 
         south_texture.img = mlx_xpm_file_to_image(player->mlx, "./south.xpm", &south_texture.width, &south_texture.height);
+        if (!south_texture.img) {
+            printf("Failed to load south_texture.img\n");
+            exit(1);
+        }
         south_texture.data = (int *)mlx_get_data_addr(south_texture.img, &bpp, &size_line, &endian);
 
         west_texture.img = mlx_xpm_file_to_image(player->mlx, "./west.xpm", &west_texture.width, &west_texture.height);
+        if (!west_texture.img) {
+            printf("Failed to load west_texture.img\n");
+            exit(1);
+        }
         west_texture.data = (int *)mlx_get_data_addr(west_texture.img, &bpp, &size_line, &endian);
 
         east_texture.img = mlx_xpm_file_to_image(player->mlx, "./east.xpm", &east_texture.width, &east_texture.height);
+        if (!east_texture.img) {
+            printf("Failed to load east_texture.img\n");
+            exit(1);
+        }
         east_texture.data = (int *)mlx_get_data_addr(east_texture.img, &bpp, &size_line, &endian);
     }
     memset(img_data, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(int));
@@ -418,6 +434,14 @@ void draw_3d_view(t_player *player) {
                 map_y += step_y;
                 side = 1;
             }
+
+            // Check map bounds before accessing
+            if (map_x < 0 || map_x >= player->map_width || map_y < 0 || map_y >= player->map_height) {
+                printf("Out of bounds: map_x=%d, map_y=%d\n", map_x, map_y);
+                hit = 1;
+                break;
+            }
+
             if (player->map[map_y][map_x] == '1')
                 hit = 1;
         }
@@ -431,7 +455,7 @@ void draw_3d_view(t_player *player) {
         perp_wall_dist *= cos(player->angle - ray_angle);
 
         line_height = (int)(WINDOW_HEIGHT / perp_wall_dist);
-        draw_start =  WINDOW_HEIGHT / 2 -line_height / 2;
+        draw_start = WINDOW_HEIGHT / 2 - line_height / 2;
         if (draw_start < 0) draw_start = 0;
         draw_end = line_height / 2 + WINDOW_HEIGHT / 2;
         if (draw_end >= WINDOW_HEIGHT) draw_end = WINDOW_HEIGHT - 1;
@@ -452,14 +476,25 @@ void draw_3d_view(t_player *player) {
 
         // Draw vertical line for the wall slice using texture
         y = draw_start;
-        while (y < draw_end)
-				{
+        while (y < draw_end) {
             int tex_y = (y - draw_start) * texture->height / line_height;
-						int tex_x;
-						if (side == 0)
-							tex_x = (int)(((player->px + perp_wall_dist * ray_dir_y) - (int)(player->px + perp_wall_dist * ray_dir_y)) * texture->width);
-						else
-							tex_x = (int)(((player->py + perp_wall_dist * ray_dir_x) - (int)(player->py + perp_wall_dist * ray_dir_x)) * texture->width);
+            int tex_x;
+            if (side == 0) {
+                double wall_x = player->py + perp_wall_dist * ray_dir_y;
+                wall_x -= floor(wall_x);
+                tex_x = (int)(wall_x * texture->width);
+            } else {
+                double wall_x = player->px + perp_wall_dist * ray_dir_x;
+                wall_x -= floor(wall_x);
+                tex_x = (int)(wall_x * texture->width);
+            }
+
+            // Check texture bounds before accessing
+            if (tex_x < 0 || tex_x >= texture->width || tex_y < 0 || tex_y >= texture->height) {
+                printf("Texture out of bounds: tex_x=%d, tex_y=%d\n", tex_x, tex_y);
+                break;
+            }
+
             color = texture->data[tex_y * texture->width + tex_x];
             img_data[y * WINDOW_WIDTH + x] = color;
             y++;
