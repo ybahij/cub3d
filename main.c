@@ -458,9 +458,9 @@ void draw_3d_view(t_player *player) {
         draw_start = WINDOW_HEIGHT / 2 - line_height / 2;
         if (draw_start < 0) draw_start = 0;
         draw_end = line_height / 2 + WINDOW_HEIGHT / 2;
-        if (draw_end >= WINDOW_HEIGHT) draw_end = WINDOW_HEIGHT - 1;
+        if (draw_end >= WINDOW_HEIGHT)
+					draw_end = WINDOW_HEIGHT - 1;
 
-        // Determine texture to use based on wall direction
         t_texture *texture;
         if (side == 0) {
             if (ray_dir_x > 0)
@@ -476,25 +476,20 @@ void draw_3d_view(t_player *player) {
 
         // Draw vertical line for the wall slice using texture
         y = draw_start;
+        int tex_x;
+        int tex_y;
+        double wall_hit;
+        if (side == 0) {
+            double wall_hit = player->py + perp_wall_dist * ray_dir_y;
+            wall_hit -= floor(wall_hit);
+            tex_x = (int)(wall_hit * texture->width);
+        } else {
+            wall_hit = player->px + perp_wall_dist * ray_dir_x;
+            wall_hit -= floor(wall_hit);
+            tex_x = (int)(wall_hit * texture->width);
+        }
         while (y < draw_end) {
-            int tex_y = (y - draw_start) * texture->height / line_height;
-            int tex_x;
-            if (side == 0) {
-                double wall_x = player->py + perp_wall_dist * ray_dir_y;
-                wall_x -= floor(wall_x);
-                tex_x = (int)(wall_x * texture->width);
-            } else {
-                double wall_x = player->px + perp_wall_dist * ray_dir_x;
-                wall_x -= floor(wall_x);
-                tex_x = (int)(wall_x * texture->width);
-            }
-
-            // Check texture bounds before accessing
-            if (tex_x < 0 || tex_x >= texture->width || tex_y < 0 || tex_y >= texture->height) {
-                printf("Texture out of bounds: tex_x=%d, tex_y=%d\n", tex_x, tex_y);
-                break;
-            }
-
+            tex_y = (y - draw_start) * texture->height / line_height;
             color = texture->data[tex_y * texture->width + tex_x];
             img_data[y * WINDOW_WIDTH + x] = color;
             y++;
