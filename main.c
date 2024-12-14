@@ -312,6 +312,12 @@
 #define PI 3.14159265358979323846
 #define FOV 60 * (PI / 180)
 
+typedef struct s_texture {
+    void *img;
+    int *data;
+    int width;
+    int height;
+} t_texture;
 typedef struct s_player
 {
 	void    *mlx;
@@ -327,17 +333,14 @@ typedef struct s_player
 	double	 angle;
 	int			n_ray;
 	void    *texture;      // Wall texture
-    int     *texture_data;
+    t_texture north_texture;
+    t_texture south_texture;
+    t_texture west_texture;
+    t_texture east_texture;
     void    *screen_img;   // Buffer for 3D rendering
     int     *screen_data;
 }           t_player;
 
-typedef struct s_texture {
-    void *img;
-    int *data;
-    int width;
-    int height;
-} t_texture;
 
 
 void draw_3d_view(t_player *player) {
@@ -384,6 +387,10 @@ void draw_3d_view(t_player *player) {
         }
         east_texture.data = (int *)mlx_get_data_addr(east_texture.img, &bpp, &size_line, &endian);
     }
+    player->north_texture = north_texture;
+    player->south_texture = south_texture;
+    player->west_texture = west_texture;
+    player->east_texture = east_texture;
     memset(img_data, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(int));
 
     // Define the angle increment based on field of view
@@ -434,14 +441,6 @@ void draw_3d_view(t_player *player) {
                 map_y += step_y;
                 side = 1;
             }
-
-            // Check map bounds before accessing
-            if (map_x < 0 || map_x >= player->map_width || map_y < 0 || map_y >= player->map_height) {
-                printf("Out of bounds: map_x=%d, map_y=%d\n", map_x, map_y);
-                hit = 1;
-                break;
-            }
-
             if (player->map[map_y][map_x] == '1')
                 hit = 1;
         }
@@ -550,6 +549,25 @@ void rotate_player(t_player *player, float angle)
 
 }
 
+int close_window(void *params)
+{
+    t_player *player;
+
+    player = (t_player *)params;
+    mlx_destroy_image(player->mlx, player->screen_img);
+    mlx_destroy_image(player->mlx, player->north_texture.img);
+    mlx_destroy_image(player->mlx, player->south_texture.img);
+    mlx_destroy_image(player->mlx, player->west_texture.img);
+    mlx_destroy_image(player->mlx, player->east_texture.img);
+    mlx_destroy_window(player->mlx, player->mlx_win);
+    int i = 0;
+    while (player->map[i])
+    {
+        free(player->map[i]);
+        i++;
+    }
+    exit(0);
+}
 int key_press(int keycode, void *params)
 {
 	t_player *player;
@@ -557,17 +575,7 @@ int key_press(int keycode, void *params)
 
 	player = (t_player *)params;
 	if (keycode == 65307) // ESC
-	{
-		mlx_destroy_image(player->mlx, player->mlx_bg);
-		mlx_destroy_window(player->mlx, player->mlx_win);
-		int i = 0;
-		while (player->map[i])
-		{
-			free(player->map[i]);
-			i++;
-		}
-		exit(0);
-	}
+        close_window(player);
 	else if (keycode == 119 || keycode == 65362)
 	{
 		move_player(player, -player->dir_x * MOVE_SPEED, -player->dir_y * MOVE_SPEED);
@@ -595,6 +603,7 @@ int key_press(int keycode, void *params)
 	return (0);
 }
 
+
 int main(void)
 {
 	t_player player;
@@ -606,14 +615,14 @@ int main(void)
 	player.dir_y = 0;
 	player.angle = -ROTATE_SPEED;
 	player.map = (char *[]){
-		strdup("1111111111"),
-		strdup("1000000001"),
-		strdup("1000010001"),
-		strdup("1000010001"),
-		strdup("10000P0001"),
-		strdup("1000010001"),
-		strdup("1000010001"),
-		strdup("1111111111"),
+		strdup("1111111111111111111111"),
+		strdup("10000000000001000000001"),
+		strdup("10000100011111011111111"),
+		strdup("10000100000000001"),
+		strdup("10000P00011111111"),
+		strdup("10000100000000001"),
+		strdup("10000100000000001"),
+		strdup("11111111111111111"),
 		NULL
 	};
 	map_width = strlen(player.map[0]);
@@ -623,11 +632,12 @@ int main(void)
 
 	player.mlx = mlx_init();
 	player.mlx_win = mlx_new_window(player.mlx, WINDOW_WIDTH, WINDOW_HEIGHT, "2D Game");
-	player.mlx_bg = mlx_xpm_file_to_image(player.mlx, "./black.xpm", &(int){WINDOW_WIDTH}, &(int){WINDOW_HEIGHT});
+	// player.mlx_bg = mlx_xpm_file_to_image(player.mlx, "./black.xpm", &(int){WINDOW_WIDTH}, &(int){WINDOW_HEIGHT});
 
 	// draw_map(&player);
 	draw_3d_view(&player);
 	mlx_hook(player.mlx_win, 2, 1L << 0, key_press, &player);
+    mlx_hook(player.mlx_win, 17, 0, close_window, &player);
 	mlx_loop(player.mlx);
 
 	return (0);
