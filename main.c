@@ -327,6 +327,7 @@
 #define PI 3.14159265358979323846
 #define FOV 60 * (PI / 180)
 
+
 typedef struct s_texture
 {
 	void		*img;
@@ -356,69 +357,134 @@ typedef struct s_player
 		delta_dist_x, delta_dist_y, side_dist_x, side_dist_y, perp_wall_dist;
 	int map_x, map_y, step_x, step_y, side, hit, line_height, draw_start
 		, draw_end, y, x;
-	t_texture	north_texture;
-	t_texture	south_texture;
-	t_texture	west_texture;
-	t_texture	east_texture;
+	t_texture	*north_texture;
+	t_texture	*south_texture;
+	t_texture	*west_texture;
+	t_texture	*east_texture;
 	
 	void *screen_img;
 	int			*screen_data;
 }				t_player;
 
+typedef struct s_garbage
+{
+	void	*ptr;
+	struct s_garbage	*next;
+}				t_garbage;
+
+int close_window(void *params);
+
+
+void *ft_garbage(void)
+{
+	static t_garbage *garbage;
+
+	return (garbage);
+}
+
+void	garbage_collector(void)
+{
+	t_garbage *garbage;
+	t_garbage *tmp;
+
+	garbage = ft_garbage();
+	while (garbage)
+	{
+		free(garbage->ptr);
+		tmp = garbage;
+		garbage = garbage->next;
+		free(tmp);
+	}
+}
+
+void	ft_add_garbage(void *ptr)
+{
+	t_garbage *garbage;
+	t_garbage *new_garbage;
+
+	garbage = ft_garbage();
+	new_garbage = malloc(sizeof(t_garbage));
+	if (!new_garbage)
+	{
+		printf("failed to allocate memory\n");
+		garbage_collector();
+		exit(1);
+	}
+	new_garbage->ptr = ptr;
+	new_garbage->next = garbage;
+	garbage = new_garbage;
+}
+
+void *ft_malloc(size_t size)
+{
+	void *ptr;
+	t_garbage *garbage;
+
+	ptr = malloc(size);
+	if (!ptr)
+	{
+		printf("failed to allocate memory\n");
+		garbage_collector();
+		exit(1);
+	}
+	ft_add_garbage(ptr);
+}
+
+int ft_strlen(const char *s)
+{
+	int i;
+
+	i = 0;
+	while (s[i])
+		i++;
+	return (i);
+}
+
+void load_texter(t_texture *texture, t_player *player, char *path)
+{
+	int bpp, size_line, endian;
+
+	texture->img = mlx_xpm_file_to_image(player->mlx, path, &texture->width,
+			&texture->height);
+	if (!texture->img)
+	{
+		printf("Failed to load texture\n");
+		close_window(player);
+		exit(1);
+	}
+	texture->data = (int *)mlx_get_data_addr(texture->img, &bpp,
+			&size_line, &endian);
+	
+}
+
+void	load_textures(t_player *player)
+{
+	player-
+	load_texter(player->north_texture, player, "norh.xpm");
+	load_texter(player->south_texture, player, "south.xpm");
+	load_texter(player->west_texture, player, "west.xpm");
+	load_texter(player->east_texture, player, "east.xpm");
+}
+
 void	set_img(t_player *player)
 {
 	static void			*img = NULL;
 	static int			*img_data = NULL;
-	static t_texture	north_texture;
-	static t_texture	south_texture;
-	static t_texture	west_texture;
-	static t_texture	east_texture;
+	// static t_texture	north_texture;
+	// static t_texture	south_texture;
+	// static t_texture	west_texture;
+	// static t_texture	east_texture;
 	int bpp, size_line, endian;
+
 	if (!img)
 	{
+		// player->north_texture = &north_texture;
+		// player->south_texture = &south_texture;
+		// player->west_texture = &west_texture;
+		// player->east_texture = &east_texture;
 		img = mlx_new_image(player->mlx, WINDOW_WIDTH, WINDOW_HEIGHT);
 		img_data = (int *)mlx_get_data_addr(img, &bpp, &size_line, &endian);
-		north_texture.img = mlx_xpm_file_to_image(player->mlx, "./north.xpm",
-				&north_texture.width, &north_texture.height);
-		if (!north_texture.img)
-		{
-			printf("Failed to load north_texture.img\n");
-			exit(1);
-		}
-		north_texture.data = (int *)mlx_get_data_addr(north_texture.img, &bpp,
-				&size_line, &endian);
-		south_texture.img = mlx_xpm_file_to_image(player->mlx, "./south.xpm",
-				&south_texture.width, &south_texture.height);
-		if (!south_texture.img)
-		{
-			printf("Failed to load south_texture.img\n");
-			exit(1);
-		}
-		south_texture.data = (int *)mlx_get_data_addr(south_texture.img, &bpp,
-				&size_line, &endian);
-		west_texture.img = mlx_xpm_file_to_image(player->mlx, "./west.xpm",
-				&west_texture.width, &west_texture.height);
-		if (!west_texture.img)
-		{
-			printf("Failed to load west_texture.img\n");
-			exit(1);
-		}
-		west_texture.data = (int *)mlx_get_data_addr(west_texture.img, &bpp,
-				&size_line, &endian);
-		east_texture.img = mlx_xpm_file_to_image(player->mlx, "./east.xpm",
-				&east_texture.width, &east_texture.height);
-		if (!east_texture.img)
-		{
-			printf("Failed to load east_texture.img\n");
-			exit(1);
-		}
-		east_texture.data = (int *)mlx_get_data_addr(east_texture.img, &bpp,
-				&size_line, &endian);
 	}
-	player->north_texture = north_texture;
-	player->south_texture = south_texture;
-	player->west_texture = west_texture;
-	player->east_texture = east_texture;
 	player->screen_img = img;
 	player->screen_data = img_data;
 	memset(img_data, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(int));
@@ -507,16 +573,16 @@ t_texture	*set_texter(t_player *player, t_texture *texture)
 	if (player->side == 0)
 	{
 		if (player->ray_dir_x > 0)
-			return (&player->west_texture);
+			return (player->west_texture);
 		else
-			return (&player->east_texture);
+			return (player->east_texture);
 	}
 	else
 	{
 		if (player->ray_dir_y > 0)
-			return (&player->north_texture);
+			return (player->north_texture);
 		else
-			return (&player->south_texture);
+			return (player->south_texture);
 	}
 }
 
@@ -637,22 +703,27 @@ int	close_window(void *params)
 	int			i;
 
 	player = (t_player *)params;
-	mlx_destroy_image(player->mlx, player->screen_img);
-	mlx_destroy_image(player->mlx, player->north_texture.img);
-	mlx_destroy_image(player->mlx, player->south_texture.img);
-	mlx_destroy_image(player->mlx, player->west_texture.img);
-	mlx_destroy_image(player->mlx, player->east_texture.img);
-	mlx_destroy_window(player->mlx, player->mlx_win);
-	mlx_destroy_display(player->mlx);
-	free(player->mlx);
-	i = 0;
-	while (player->map[i])
-	{
-		free(player->map[i]);
-		i++;
-	}
+
+	if (player->mlx_win)
+		mlx_destroy_window(player->mlx, player->mlx_win);
+	if (player->north_texture->img)
+		mlx_destroy_image(player->mlx, player->north_texture->img);
+	if (player->south_texture->img)
+		mlx_destroy_image(player->mlx, player->south_texture->img);
+	if (player->west_texture->img)
+		mlx_destroy_image(player->mlx, player->west_texture->img);
+	if (player->east_texture->img)
+		mlx_destroy_image(player->mlx, player->east_texture->img);
+	if (player->screen_img)
+		mlx_destroy_image(player->mlx, player->screen_img);
+	if (player->mlx)
+		mlx_destroy_display(player->mlx);
+	garbage_collector();
+	if (player->mlx)
+		free(player->mlx);
 	exit(0);
 }
+
 
 int	key_press(int keycode, void *params)
 {
@@ -725,7 +796,6 @@ void get_player_position(t_player *player)
 		}
 		i++;
 	}
-	
 }
 
 
@@ -734,29 +804,41 @@ int	main(void)
 	t_player player;
 	int map_width, map_height;
 
-	// player.angle = -ROTATE_SPEED;
 	player.map = (char *[]){
-		strdup("11111111111111111"),
-		strdup("100000000000000001"), 
-		strdup("10000010000000001"),	
-		strdup("1000010000000000111"),
-		strdup("10000000010000000001"),
-		strdup("1111110011011111111"), 
-		strdup("1000000010000111"), 
-		strdup("100001N1011111011111111"),
-		strdup("10000100000000001"), 
-		strdup("1000P00011111111"),
-		strdup("10000100000000001"), 
-		strdup("1000000100000001"),
-		strdup("10000100000000001"),
-		strdup("10000110000000001"),
-		strdup("11111111111111111"), 
+		("11111111111111111"),
+		("100000000000000001"), 
+		("10000010000000001"),	
+		("1000010000000000111"),
+		("10000000010000000001"),
+		("1111110011011111111"), 
+		("1000000010000111"), 
+		("100001N1011111011111111"),
+		("10000100000000001"), 
+		("1000P00011111111"),
+		("10000100000000001"), 
+		("1000000100000001"),
+		("10000100000000001"),
+		("10000110000000001"),
+		("11111111111111111"), 
 		NULL};
 	get_player_position(&player);
 	set_angle(&player);
 	player.mlx = mlx_init();
+	if(player.mlx == NULL)
+	{
+		printf("Error\n");
+		garbage_collector();
+		exit(1);
+	}
 	player.mlx_win = mlx_new_window(player.mlx, WINDOW_WIDTH, WINDOW_HEIGHT,
 			"cude_3D");
+	if(player.mlx_win == NULL)
+	{
+		printf("Error\n");
+		garbage_collector();
+		exit(1);
+	}
+	load_textures(&player);
 	draw_3d_view(&player);
 	mlx_hook(player.mlx_win, 2, 1L << 0, key_press, &player);
 	mlx_hook(player.mlx_win, 17, 0, close_window, &player);

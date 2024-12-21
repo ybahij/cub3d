@@ -2,7 +2,7 @@
 NAME = cub3d
 SRCS = main.c
 MLX_DIR = ./minilibx-linux
-MLX = -L$(MLX_DIR) -lmlx -lXext -lX11 -lm #-fsanitize=address -g3
+MLX = -L$(MLX_DIR) -lmlx -lXext -lX11 -lm -fsanitize=address -g3
 
 OBJS = $(SRCS:.c=.o)
 
