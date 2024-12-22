@@ -375,60 +375,69 @@ typedef struct s_garbage
 int close_window(void *params);
 
 
-void *ft_garbage(void)
+t_garbage **ft_garbage(void)
 {
-	static t_garbage *garbage;
-
-	return (garbage);
+    static t_garbage *garbage = NULL;
+    return &garbage;
 }
 
-void	garbage_collector(void)
-{
-	t_garbage *garbage;
-	t_garbage *tmp;
 
-	garbage = ft_garbage();
-	while (garbage)
-	{
-		free(garbage->ptr);
-		tmp = garbage;
-		garbage = garbage->next;
-		free(tmp);
-	}
+void garbage_collector(void)
+{
+    t_garbage **garbage = ft_garbage();
+    t_garbage *current = *garbage;
+
+    while (current)
+    {
+        t_garbage *next = current->next;
+        free(current->ptr);
+        free(current);
+        current = next;
+    }
+    *garbage = NULL;
 }
 
-void	ft_add_garbage(void *ptr)
+void ft_add_garbage(void *ptr)
 {
-	t_garbage *garbage;
-	t_garbage *new_garbage;
+    t_garbage **garbage = ft_garbage();
+    t_garbage *new_garbage = malloc(sizeof(t_garbage));
 
-	garbage = ft_garbage();
-	new_garbage = malloc(sizeof(t_garbage));
-	if (!new_garbage)
-	{
-		printf("failed to allocate memory\n");
-		garbage_collector();
-		exit(1);
-	}
-	new_garbage->ptr = ptr;
-	new_garbage->next = garbage;
-	garbage = new_garbage;
+    if (!new_garbage)
+    {
+        printf("Failed to allocate memory for garbage collector\n");
+        garbage_collector();
+        exit(1);
+    }
+    new_garbage->ptr = ptr;
+    new_garbage->next = NULL;
+
+    if (*garbage == NULL)
+        *garbage = new_garbage;
+    else
+    {
+        t_garbage *last = *garbage;
+        while (last->next != NULL)
+            last = last->next;
+        last->next = new_garbage;
+    }
 }
 
-void *ft_malloc(size_t size)
-{
-	void *ptr;
-	t_garbage *garbage;
 
-	ptr = malloc(size);
+
+void	*ft_malloc(size_t size)
+{
+	void	*ptr = malloc(size);
+	
 	if (!ptr)
 	{
-		printf("failed to allocate memory\n");
+		printf("Failed to allocate memory\n");
 		garbage_collector();
 		exit(1);
 	}
 	ft_add_garbage(ptr);
+	return (ptr);
 }
+
 
 int ft_strlen(const char *s)
 {
@@ -459,10 +468,17 @@ void load_texter(t_texture *texture, t_player *player, char *path)
 
 void	load_textures(t_player *player)
 {
-	player-
-	load_texter(player->north_texture, player, "norh.xpm");
+	player->north_texture = NULL;
+	player->south_texture = NULL;
+	player->west_texture = NULL;
+	player->east_texture = NULL;
+	player->north_texture = ft_malloc(sizeof(t_texture));
+	load_texter(player->north_texture, player, "nort.xpm");
+	player->south_texture = ft_malloc(sizeof(t_texture));
 	load_texter(player->south_texture, player, "south.xpm");
+	player->west_texture  = ft_malloc(sizeof(t_texture));
 	load_texter(player->west_texture, player, "west.xpm");
+	player->east_texture  = ft_malloc(sizeof(t_texture));
 	load_texter(player->east_texture, player, "east.xpm");
 }
 
@@ -470,18 +486,10 @@ void	set_img(t_player *player)
 {
 	static void			*img = NULL;
 	static int			*img_data = NULL;
-	// static t_texture	north_texture;
-	// static t_texture	south_texture;
-	// static t_texture	west_texture;
-	// static t_texture	east_texture;
 	int bpp, size_line, endian;
 
 	if (!img)
 	{
-		// player->north_texture = &north_texture;
-		// player->south_texture = &south_texture;
-		// player->west_texture = &west_texture;
-		// player->east_texture = &east_texture;
 		img = mlx_new_image(player->mlx, WINDOW_WIDTH, WINDOW_HEIGHT);
 		img_data = (int *)mlx_get_data_addr(img, &bpp, &size_line, &endian);
 	}
@@ -697,6 +705,15 @@ void	rotate_player(t_player *player, float angle)
 	draw_3d_view(player);
 }
 
+void	destroy_img(t_texture *texture, t_player *player)
+{
+	if (texture)
+	{
+		if (texture->img)
+			mlx_destroy_image(player->mlx, texture->img);
+	}
+}
+
 int	close_window(void *params)
 {
 	t_player	*player;
@@ -706,14 +723,14 @@ int	close_window(void *params)
 
 	if (player->mlx_win)
 		mlx_destroy_window(player->mlx, player->mlx_win);
-	if (player->north_texture->img)
-		mlx_destroy_image(player->mlx, player->north_texture->img);
-	if (player->south_texture->img)
-		mlx_destroy_image(player->mlx, player->south_texture->img);
-	if (player->west_texture->img)
-		mlx_destroy_image(player->mlx, player->west_texture->img);
-	if (player->east_texture->img)
-		mlx_destroy_image(player->mlx, player->east_texture->img);
+	if (player->north_texture)
+		destroy_img(player->north_texture, player);
+	if (player->south_texture)
+		destroy_img(player->south_texture, player);
+	if (player->west_texture)
+		destroy_img(player->west_texture, player);
+	if (player->east_texture)
+		destroy_img(player->east_texture, player);
 	if (player->screen_img)
 		mlx_destroy_image(player->mlx, player->screen_img);
 	if (player->mlx)
