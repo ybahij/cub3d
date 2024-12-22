@@ -361,7 +361,7 @@ typedef struct s_player
 	t_texture	*south_texture;
 	t_texture	*west_texture;
 	t_texture	*east_texture;
-	
+
 	void *screen_img;
 	int			*screen_data;
 }				t_player;
@@ -427,7 +427,7 @@ void ft_add_garbage(void *ptr)
 void	*ft_malloc(size_t size)
 {
 	void	*ptr = malloc(size);
-	
+
 	if (!ptr)
 	{
 		printf("Failed to allocate memory\n");
@@ -463,7 +463,7 @@ void load_texter(t_texture *texture, t_player *player, char *path)
 	}
 	texture->data = (int *)mlx_get_data_addr(texture->img, &bpp,
 			&size_line, &endian);
-	
+
 }
 
 void	load_textures(t_player *player)
@@ -472,8 +472,10 @@ void	load_textures(t_player *player)
 	player->south_texture = NULL;
 	player->west_texture = NULL;
 	player->east_texture = NULL;
+	player->screen_img = NULL;
+	player->screen_data = NULL;
 	player->north_texture = ft_malloc(sizeof(t_texture));
-	load_texter(player->north_texture, player, "nort.xpm");
+	load_texter(player->north_texture, player, "north.xpm");
 	player->south_texture = ft_malloc(sizeof(t_texture));
 	load_texter(player->south_texture, player, "south.xpm");
 	player->west_texture  = ft_malloc(sizeof(t_texture));
@@ -537,7 +539,7 @@ void	ray_dir(double  angle_increment,t_player *player)
 void	ray_travel(t_player *player)
 {
 	int hit;
-	
+
 	hit = 0;
 	while (hit == 0)
 	{
@@ -577,7 +579,7 @@ void	wall_height(t_player *player)
 }
 
 t_texture	*set_texter(t_player *player, t_texture *texture)
-{		
+{
 	if (player->side == 0)
 	{
 		if (player->ray_dir_x > 0)
@@ -682,7 +684,7 @@ void	move_player(t_player *player, float dx, float dy)
 			draw_3d_view(player);
 		}
 		else if (player->map[(int)new_py][(int)player->px] != '1')
-		{	
+		{
 			player->py = new_py;
 			draw_3d_view(player);
 		}
@@ -823,20 +825,20 @@ int	main(void)
 
 	player.map = (char *[]){
 		("11111111111111111"),
-		("100000000000000001"), 
-		("10000010000000001"),	
+		("100000000000000001"),
+		("10000010000000001"),
 		("1000010000000000111"),
 		("10000000010000000001"),
-		("1111110011011111111"), 
-		("1000000010000111"), 
+		("1111110011011111111"),
+		("1000000010000111"),
 		("100001N1011111011111111"),
-		("10000100000000001"), 
+		("10000100000000001"),
 		("1000P00011111111"),
-		("10000100000000001"), 
+		("10000100000000001"),
 		("1000000100000001"),
 		("10000100000000001"),
 		("10000110000000001"),
-		("11111111111111111"), 
+		("11111111111111111"),
 		NULL};
 	get_player_position(&player);
 	set_angle(&player);
