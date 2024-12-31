@@ -648,52 +648,79 @@ void draw_mini_map(t_player *player)
     int map_x, map_y;
     int mini_map_x, mini_map_y;
     int color;
+    int frame_thickness = 2; // Thickness of the frame
+    int map_width = player->map_width;
+    int map_height = player->map_height;
+    double scale_x = (double)(MINI_MAP_SIZE - 2 * frame_thickness) / map_width;
+    double scale_y = (double)(MINI_MAP_SIZE - 2 * frame_thickness) / map_height;
+    double scale = (scale_x < scale_y) ? scale_x : scale_y;
 
-	map_y = 0;
-	while (player->map[map_y])
-	{
-		map_x = 0;
-		while (player->map[map_y][map_x])
-		{
-			mini_map_x = map_x * MINI_MAP_SCALE;
-			mini_map_y = map_y * MINI_MAP_SCALE;
-			if (player->map[map_y][map_x] == '1')
-				color = 0x000000;
-			else
-				color = 0xFFFFFF;
+    // Draw outer frame
+    for (int i = 0; i < MINI_MAP_SIZE + 2 * frame_thickness; i++)
+    {
+        for (int j = 0; j < MINI_MAP_SIZE + 2 * frame_thickness; j++)
+        {
+            if (i < frame_thickness || i >= MINI_MAP_SIZE + frame_thickness ||
+                j < frame_thickness || j >= MINI_MAP_SIZE + frame_thickness)
+            {
+                player->screen_data[j * WINDOW_WIDTH + i] = 0x000000; // Black color
+            }
+        }
+    }
 
-			int i = 0;
-			while (i < MINI_MAP_SCALE)
-			{
-				int j = 0;
-				while (j < MINI_MAP_SCALE)
-				{
-					if (mini_map_x + i < MINI_MAP_SIZE && mini_map_y + j < MINI_MAP_SIZE)
-						player->screen_data[(mini_map_y + j) * WINDOW_WIDTH + (mini_map_x + i)] = color;
-					j++;
-				}
-				i++;
-			}
-			map_x++;
-		}
-		map_y++;
-	}
+    // Draw inner frame
+    for (int i = frame_thickness; i < MINI_MAP_SIZE + frame_thickness; i++)
+    {
+        for (int j = frame_thickness; j < MINI_MAP_SIZE + frame_thickness; j++)
+        {
+            if (i < 2 * frame_thickness || i >= MINI_MAP_SIZE ||
+                j < 2 * frame_thickness || j >= MINI_MAP_SIZE)
+            {
+                player->screen_data[j * WINDOW_WIDTH + i] = 0x000000; // Black color
+            }
+        }
+    }
 
+    // Draw the mini-map
+    for (map_y = 0; player->map[map_y]; map_y++)
+    {
+        for (map_x = 0; player->map[map_y][map_x]; map_x++)
+        {
+            mini_map_x = (int)(map_x * scale) + 2 * frame_thickness;
+            mini_map_y = (int)(map_y * scale) + 2 * frame_thickness;
+            if (player->map[map_y][map_x] == '1')
+                color = 0xFFFFFF; // Wall color
+            else
+                color = 0x000000; // Empty space color
 
-    mini_map_x = (int)(player->px * MINI_MAP_SCALE);
-    mini_map_y = (int)(player->py * MINI_MAP_SCALE);
-	int i = 0;
-	while (i < MINI_MAP_SCALE)
-	{
-		int j = 0;
-		while (j < MINI_MAP_SCALE)
-		{
-			if (mini_map_x + i < MINI_MAP_SIZE && mini_map_y + j < MINI_MAP_SIZE)
-				player->screen_data[(mini_map_y + j) * WINDOW_WIDTH + (mini_map_x + i)] = 0xFF0000; // Player color
-			j++;
-		}
-		i++;
-	}
+            for (int i = 0; i < (int)scale; i++)
+            {
+                for (int j = 0; j < (int)scale; j++)
+                {
+                    if (mini_map_x + i < MINI_MAP_SIZE + 2 * frame_thickness &&
+                        mini_map_y + j < MINI_MAP_SIZE + 2 * frame_thickness)
+                    {
+                        player->screen_data[(mini_map_y + j) * WINDOW_WIDTH + (mini_map_x + i)] = color;
+                    }
+                }
+            }
+        }
+    }
+
+    // Draw player position on the mini-map
+    mini_map_x = (int)(player->px * scale) + 2 * frame_thickness;
+    mini_map_y = (int)(player->py * scale) + 2 * frame_thickness;
+    for (int i = 0; i < (int)scale; i++)
+    {
+        for (int j = 0; j < (int)scale; j++)
+        {
+            if (mini_map_x + i < MINI_MAP_SIZE + 2 * frame_thickness &&
+                mini_map_y + j < MINI_MAP_SIZE + 2 * frame_thickness)
+            {
+                player->screen_data[(mini_map_y + j) * WINDOW_WIDTH + (mini_map_x + i)] = 0xFF0000; // Player color
+            }
+        }
+    }
 }
 
 void	draw_3d_view(t_player *player)
@@ -895,28 +922,76 @@ char *ft_strdup(const char *s)
 
 void get_map(t_player *player)
 {
-	int i;
-	char **map;
+    int i = 0;
+    int max_width = 0;
+    char **map;
 
-	i = 0;
-	map = ft_malloc(sizeof(char *) * 16);
-	map[0] = ft_strdup("11111111111111111");
-	map[1] = ft_strdup("100000000000000001");
-	map[2] = ft_strdup("10000010000000001");
-	map[3] = ft_strdup("1000010000000000111");
-	map[4] = ft_strdup("10000000010000000001");
-	map[5] = ft_strdup("1111110011011111111");
-	map[6] = ft_strdup("1000000010000111");
-	map[7] = ft_strdup("100001N1011111011111111");
-	map[8] = ft_strdup("10000110000000001");
-	map[9] = ft_strdup("1000P00011111111");
-	map[10] = ft_strdup("10000100000000001");
-	map[11] = ft_strdup("1000000100000001");
-	map[12] = ft_strdup("10000100000000001");
-	map[13] = ft_strdup("10000110000000001");
-	map[14] = ft_strdup("11111111111111111");
-	map[15] = NULL;
-	player->map = map;
+    map = ft_malloc(sizeof(char *) * 16);
+    map[i++] = ft_strdup("        1111111111111111111111111");
+    map[i++] = ft_strdup("        1000000000110000000000001");
+    map[i++] = ft_strdup("        1011000001110000000000001");
+    map[i++] = ft_strdup("        1001000000000000000000001");
+    map[i++] = ft_strdup("111111111011000001110000000000001");
+    map[i++] = ft_strdup("100000000011000001110111111111111");
+    map[i++] = ft_strdup("11110111111111011100000010001");
+    map[i++] = ft_strdup("11110111111111011101010010001");
+    map[i++] = ft_strdup("11000000110101011100000010001");
+    map[i++] = ft_strdup("10000000000000001100000010001");
+    map[i++] = ft_strdup("10000000000000001101010010001");
+	map[i++] = ft_strdup("10000000000000001100000010001");
+    map[i++] = ft_strdup("10000000000000001100000010001");
+    map[i++] = ft_strdup("10000000000000001101010010001");
+    map[i++] = ft_strdup("10000000000000001100000010001");
+    map[i++] = ft_strdup("10000000000000001101010010001");
+    map[i++] = ft_strdup("10000000000000001100000010001");
+    map[i++] = ft_strdup("10000000000000001101010010001");
+	map[i++] = ft_strdup("10000000000000001100000010001");
+    map[i++] = ft_strdup("10000000000000001101010010001");
+    map[i++] = ft_strdup("10000000000000001101010010001");
+    map[i++] = ft_strdup("10000000000000001100000010001");
+    map[i++] = ft_strdup("10000000000000001101010010001");
+	map[i++] = ft_strdup("10000000000000001100000010001");
+    map[i++] = ft_strdup("10000000000000001100000010001");
+    map[i++] = ft_strdup("10000000000000001101010010001");
+    map[i++] = ft_strdup("10000000000000001100000010001");
+    map[i++] = ft_strdup("10000000000000001101010010001");
+    map[i++] = ft_strdup("10000000000000001100000010001");
+    map[i++] = ft_strdup("10000000000000001101010010001");
+	map[i++] = ft_strdup("10000000000000001100000010001");
+    map[i++] = ft_strdup("10000000000000001101010010001");
+    map[i++] = ft_strdup("10000000000000001101010010001");
+    map[i++] = ft_strdup("10000000000000001100000010001");
+    map[i++] = ft_strdup("10000000000000001101010010001");
+	map[i++] = ft_strdup("10000000000000001100000010001");
+    map[i++] = ft_strdup("10000000000000001100000010001");
+    map[i++] = ft_strdup("10000000000000001101010010001");
+    map[i++] = ft_strdup("10000000000000001100000010001");
+    map[i++] = ft_strdup("10000000000000001101010010001");
+    map[i++] = ft_strdup("10000000000000001100000010001");
+    map[i++] = ft_strdup("10000000000000001101010010001");
+	map[i++] = ft_strdup("10000000000000001100000010001");
+    map[i++] = ft_strdup("10000000000000001101010010001");
+    map[i++] = ft_strdup("10000000000000001101010010001");	
+    map[i++] = ft_strdup("11000001110101011111011110N0111");
+    map[i++] = ft_strdup("11110111 1110101 101111010001");
+    map[i++] = ft_strdup("11111111 1111111 111111111111");
+    map[i] = NULL;
+
+    // Determine the length of the longest line
+    i = 0;
+    while (map[i])
+    {
+        int line_length = strlen(map[i]);
+        if (line_length > max_width)
+        {
+            max_width = line_length;
+        }
+        i++;
+    }
+
+    player->map = map;
+    player->map_width = max_width;
+    player->map_height = i;
 }
 
 int	main(void)
