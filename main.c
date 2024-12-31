@@ -324,6 +324,8 @@
 #define WINDOW_WIDTH 1000
 #define WINDOW_HEIGHT 800
 #define MAP_SIZE 100
+#define MINI_MAP_SCALE 10
+#define MINI_MAP_SIZE 200
 #define PI 3.14159265358979323846
 #define FOV 60 * (PI / 180)
 
@@ -640,6 +642,60 @@ void	ceiling_floor_color(t_player *player)
 	}
 }
 
+
+void draw_mini_map(t_player *player)
+{
+    int map_x, map_y;
+    int mini_map_x, mini_map_y;
+    int color;
+
+	map_y = 0;
+	while (player->map[map_y])
+	{
+		map_x = 0;
+		while (player->map[map_y][map_x])
+		{
+			mini_map_x = map_x * MINI_MAP_SCALE;
+			mini_map_y = map_y * MINI_MAP_SCALE;
+			if (player->map[map_y][map_x] == '1')
+				color = 0x000000;
+			else
+				color = 0xFFFFFF;
+
+			int i = 0;
+			while (i < MINI_MAP_SCALE)
+			{
+				int j = 0;
+				while (j < MINI_MAP_SCALE)
+				{
+					if (mini_map_x + i < MINI_MAP_SIZE && mini_map_y + j < MINI_MAP_SIZE)
+						player->screen_data[(mini_map_y + j) * WINDOW_WIDTH + (mini_map_x + i)] = color;
+					j++;
+				}
+				i++;
+			}
+			map_x++;
+		}
+		map_y++;
+	}
+
+
+    mini_map_x = (int)(player->px * MINI_MAP_SCALE);
+    mini_map_y = (int)(player->py * MINI_MAP_SCALE);
+	int i = 0;
+	while (i < MINI_MAP_SCALE)
+	{
+		int j = 0;
+		while (j < MINI_MAP_SCALE)
+		{
+			if (mini_map_x + i < MINI_MAP_SIZE && mini_map_y + j < MINI_MAP_SIZE)
+				player->screen_data[(mini_map_y + j) * WINDOW_WIDTH + (mini_map_x + i)] = 0xFF0000; // Player color
+			j++;
+		}
+		i++;
+	}
+}
+
 void	draw_3d_view(t_player *player)
 {
 	t_texture *texture;
@@ -658,6 +714,7 @@ void	draw_3d_view(t_player *player)
 		ceiling_floor_color(player);
 		player->x++;
 	}
+	draw_mini_map(player);
 	mlx_put_image_to_window(player->mlx, player->mlx_win, player->screen_img, 0, 0);
 }
 
@@ -818,28 +875,56 @@ void get_player_position(t_player *player)
 }
 
 
+char *ft_strdup(const char *s)
+{
+	char *str;
+	int i;
+
+	i = 0;
+	str = ft_malloc(sizeof(char) * (ft_strlen(s) + 1));
+	if (!str)
+		return (NULL);
+	while (s[i])
+	{
+		str[i] = s[i];
+		i++;
+	}
+	str[i] = '\0';
+	return (str);
+}
+
+void get_map(t_player *player)
+{
+	int i;
+	char **map;
+
+	i = 0;
+	map = ft_malloc(sizeof(char *) * 16);
+	map[0] = ft_strdup("11111111111111111");
+	map[1] = ft_strdup("100000000000000001");
+	map[2] = ft_strdup("10000010000000001");
+	map[3] = ft_strdup("1000010000000000111");
+	map[4] = ft_strdup("10000000010000000001");
+	map[5] = ft_strdup("1111110011011111111");
+	map[6] = ft_strdup("1000000010000111");
+	map[7] = ft_strdup("100001N1011111011111111");
+	map[8] = ft_strdup("10000110000000001");
+	map[9] = ft_strdup("1000P00011111111");
+	map[10] = ft_strdup("10000100000000001");
+	map[11] = ft_strdup("1000000100000001");
+	map[12] = ft_strdup("10000100000000001");
+	map[13] = ft_strdup("10000110000000001");
+	map[14] = ft_strdup("11111111111111111");
+	map[15] = NULL;
+	player->map = map;
+}
+
 int	main(void)
 {
 	t_player player;
 	int map_width, map_height;
 
-	player.map = (char *[]){
-		("11111111111111111"),
-		("100000000000000001"),
-		("10000010000000001"),
-		("1000010000000000111"),
-		("10000000010000000001"),
-		("1111110011011111111"),
-		("1000000010000111"),
-		("100001N1011111011111111"),
-		("10000100000000001"),
-		("1000P00011111111"),
-		("10000100000000001"),
-		("1000000100000001"),
-		("10000100000000001"),
-		("10000110000000001"),
-		("11111111111111111"),
-		NULL};
+	get_map(&player);
 	get_player_position(&player);
 	set_angle(&player);
 	player.mlx = mlx_init();
