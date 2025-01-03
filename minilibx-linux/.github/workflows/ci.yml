@@ -73,7 +73,7 @@ jobs:
             xdotool search --name Title2 windowfocus key Escape
             wait $PID
         elif [ "$RUNNER_OS" == "macOS" ]; then
-            MallocStackLoggingNoCompact=1
+            ft_mallocStackLoggingNoCompact=1
             ./mlx-test &
             sleep 30
             leaks mlx-test

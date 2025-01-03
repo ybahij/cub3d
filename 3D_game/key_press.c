@@ -1,4 +1,4 @@
-#include"../includes/cub3d.h"
+#include"../cub3d.h"
 
 void	rotate_player(t_player *player, float angle)
 {
@@ -27,7 +27,6 @@ void	destroy_img(t_texture *texture, t_player *player)
 int	close_window(void *params)
 {
 	t_player	*player;
-	int			i;
 
 	player = (t_player *)params;
 
@@ -46,8 +45,6 @@ int	close_window(void *params)
 	if (player->mlx)
 		mlx_destroy_display(player->mlx);
 	garbage_collector();
-	if (player->mlx)
-		free(player->mlx);
 	exit(0);
 }
 
@@ -55,7 +52,6 @@ int	close_window(void *params)
 int	key_press(int keycode, void *params)
 {
 	t_player	*player;
-	int			i;
 
 	player = (t_player *)params;
 	if (keycode == 65307)

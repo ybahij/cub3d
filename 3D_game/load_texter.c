@@ -1,4 +1,4 @@
-#include "../includes/cub3d.h"
+#include "../cub3d.h"
 
 void load_texter(t_texture *texture, t_player *player, char *path)
 {
@@ -12,12 +12,12 @@ void load_texter(t_texture *texture, t_player *player, char *path)
 		close_window(player);
 		exit(1);
 	}
-	texture->data = (int *)mlx_get_data_addr(texture->img, &bpp,
+	texture->player = (int *)mlx_get_data_addr(texture->img, &bpp,
 			&size_line, &endian);
 
 }
 
-t_texture	*set_texter(t_player *player, t_texture *texture)
+t_texture	*set_texter(t_player *player)
 {
 	if (player->side == 0)
 	{
@@ -42,31 +42,31 @@ void	load_textures(t_player *player)
 	player->west_texture = NULL;
 	player->east_texture = NULL;
 	player->screen_img = NULL;
-	player->screen_data = NULL;
+	player->screen_player = NULL;
 	player->north_texture = ft_malloc(sizeof(t_texture));
-	load_texter(player->north_texture, player, "./texture/north.xpm");
+	load_texter(player->north_texture, player, "textures/north.xpm");
 	player->south_texture = ft_malloc(sizeof(t_texture));
-	load_texter(player->south_texture, player, "./texture/south.xpm");
+	load_texter(player->south_texture, player, "textures/south.xpm");
 	player->west_texture  = ft_malloc(sizeof(t_texture));
-	load_texter(player->west_texture, player, "./texture/west.xpm");
+	load_texter(player->west_texture, player, "textures/west.xpm");
 	player->east_texture  = ft_malloc(sizeof(t_texture));
-	load_texter(player->east_texture, player, "./texture/east.xpm");
+	load_texter(player->east_texture, player, "textures/east.xpm");
 }
 
 void	set_img(t_player *player)
 {
 	static void			*img = NULL;
-	static int			*img_data = NULL;
+	static int			*img_player = NULL;
 	int bpp, size_line, endian;
 
 	if (!img)
 	{
 		img = mlx_new_image(player->mlx, WINDOW_WIDTH, WINDOW_HEIGHT);
-		img_data = (int *)mlx_get_data_addr(img, &bpp, &size_line, &endian);
+		img_player = (int *)mlx_get_data_addr(img, &bpp, &size_line, &endian);
 	}
 	player->screen_img = img;
-	player->screen_data = img_data;
-	memset(img_data, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(int));
+	player->screen_player = img_player;
+	ft_memset(img_player, 0, WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(int));
 }
 
 void	draw_texture(t_player *player, t_texture *texture)
@@ -91,8 +91,8 @@ void	draw_texture(t_player *player, t_texture *texture)
 	while (player->y < player->draw_end)
 	{
 		tex_y = (player->y - player->draw_start) * texture->height / player->line_height;
-		color = texture->data[tex_y * texture->width + tex_x];
-		player->screen_data[player->y * WINDOW_WIDTH + player->x] = color;
+		color = texture->player[tex_y * texture->width + tex_x];
+		player->screen_player[player->y * WINDOW_WIDTH + player->x] = color;
 		player->y++;
 	}
 }

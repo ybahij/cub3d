@@ -1,4 +1,4 @@
-#include "../includes/cub3d.h"
+#include "../cub3d.h"
 
 void	ray_dist(t_player *player)
 {
@@ -83,13 +83,13 @@ void	ceiling_floor_color(t_player *player)
 	player->y = 0;
 	while (player->y < player->draw_start)
 	{
-		player->screen_data[player->y * WINDOW_WIDTH + player->x] = player->ceiling_color;
+		player->screen_player[player->y * WINDOW_WIDTH + player->x] = player->ceiling_color;
 		player->y++;
 	}
 	player->y = player->draw_end;
 	while (player->y < WINDOW_HEIGHT)
 	{
-		player->screen_data[player->y * WINDOW_WIDTH + player->x] = player->floor_color;
+		player->screen_player[player->y * WINDOW_WIDTH + player->x] = player->floor_color;
 		player->y++;
 	}
 }
