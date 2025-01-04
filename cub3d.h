@@ -230,5 +230,15 @@ void	ceiling_floor_color(t_player *player);
 void	draw_3d_view(t_player *player);
 void draw_mini_map(t_player *player);
 void	draw_3d_view(t_player *player);
+void	mini_map_set(t_minimap *mm, t_player *p);
+void	mini_map_u1(t_player *p);
+void	min_map_u8(t_player *p);
+void	mini_map_u2(t_player *p);
+void	mini_map_u3(t_player *p);
+void	mini_map_u4(t_player *p);
+void	mini_map_u5(t_player *p);
+void	mini_map_u6(t_player *p);
+void	mini_map_u7(t_player *p);
+void	mini_map_u8(t_player *p);
 
 #endif

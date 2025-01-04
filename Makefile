@@ -6,7 +6,7 @@ SRC = check_map.c parse_colors.c reading_map2.c reading_map.c parse_directions.c
 	utils2.c ft_split.c check_pce.c parse_colors2.c cub3d.c utils.c\
 	includes/get_next_line.c   includes/get_next_line_utils.c\
 	3D_game/ft_malloc.c  3D_game/key_press.c  3D_game/load_texter.c  3D_game/main.c  3D_game/ray_caste.c\
-	3D_game/set_player.c
+	3D_game/set_player.c 3D_game/mini_map.c 3D_game/mini_map1.c
 
 OBJ = $(SRC:.c=.o)
 LINK = -lXext -lX11 -lmlx ./minilibx-linux/libmlx.a -lm
