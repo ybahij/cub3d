@@ -27,8 +27,45 @@ typedef struct s_node
 	struct s_node	*next;
 }					t_node;
 
+typedef struct s_minimap
+{
+	int	frame_thickness;
+	int	view_radius;
+	int	tile_size;
+	int	map_height;
+	int	map_width;
+	int	player_map_x;
+	int	player_map_y;
+	int	viewport_size;
+	int	start_x;
+	int	end_x;
+	int	start_y;
+	int	end_y;
+	int	mini_map_size;
+	int	total_size;
+	int	map_start_x;
+	int	map_start_y;
+	int	y;
+	int	x;
+	int	pos;
+	int	map_y;
+	int	map_x;
+	int	local_x;
+	int	local_y;
+	int	mini_map_x;
+	int	mini_map_y;
+	int	color;
+	int	i;
+	int	j;
+	int	relative_player_x;
+	int	relative_player_y;
+	int	player_screen_x;
+	int	player_screen_y;
+}	t_minimap;
+
 typedef struct s_texture
 {
+	char		*path;
 	void		*img;
 	int			*player;
 	int			width;
@@ -82,7 +119,7 @@ typedef struct s_player
 	t_texture	*south_texture;
 	t_texture	*west_texture;
 	t_texture	*east_texture;
-
+	t_minimap	*mm;
 	void *screen_img;
 	int			*screen_player;
 }					t_player;

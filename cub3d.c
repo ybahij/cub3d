@@ -52,6 +52,7 @@ void	map_height(t_player *player)
 	while (player->map[i])
 		i++;
 	player->height = i;
+	player->width = 0;
 	i = 0;
 	while (player->map[i])
 	{
@@ -80,13 +81,14 @@ int	main(int ac, char **av)
 	ft_add_garbage(player.mlx);
 	player.mlx_win = mlx_new_window(player.mlx, WINDOW_WIDTH, WINDOW_HEIGHT,
 			"cude_3D");
+	load_textures(&player);
 	if(player.mlx_win == NULL)
 	{
 		printf("Error\n");
 		garbage_collector();
 		exit(1);
 	}
-	load_textures(&player);
+	map_height(&player);
 	draw_3d_view(&player);
 	mlx_hook(player.mlx_win, 2, 1L << 0, key_press, &player);
 	mlx_hook(player.mlx_win, 17, 0, close_window, &player);

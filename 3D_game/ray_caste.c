@@ -75,7 +75,7 @@ void	wall_height(t_player *player)
 		player->draw_start = 0;
 	player->draw_end = player->line_height / 2 + WINDOW_HEIGHT / 2;
 	if (player->draw_end >= WINDOW_HEIGHT)
-		player->draw_end = WINDOW_HEIGHT - 1;
+		player->draw_end = WINDOW_HEIGHT;
 }
 
 void	ceiling_floor_color(t_player *player)
