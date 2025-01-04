@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   mini_map.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ybahij <ybahij@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/04 23:20:36 by ybahij            #+#    #+#             */
+/*   Updated: 2025/01/05 00:08:06 by ybahij           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../cub3d.h"
 
 void	mini_map_set(t_minimap *mm, t_player *p)
@@ -14,6 +26,8 @@ void	mini_map_set(t_minimap *mm, t_player *p)
 	mm->end_x = mm->start_x + mm->viewport_size - 1;
 	mm->start_y = mm->player_map_y - mm->view_radius;
 	mm->end_y = mm->start_y + mm->viewport_size - 1;
+	mm->mini_map_size = 0;
+	mini_map_set1(mm);
 }
 
 void	mini_map_u1(t_player *p)
@@ -43,20 +57,20 @@ void	mini_map_u1(t_player *p)
 void	min_map_u8(t_player *p)
 {
 	while (p->mm->x < p->mm->total_size)
+	{
+		if (p->mm->y < p->mm->frame_thickness
+			|| p->mm->y >= p->mm->total_size - p->mm->frame_thickness
+			|| p->mm->x < p->mm->frame_thickness
+			|| p->mm->x >= p->mm->total_size - p->mm->frame_thickness)
 		{
-			if (p->mm->y < p->mm->frame_thickness
-				|| p->mm->y >= p->mm->total_size - p->mm->frame_thickness
-				|| p->mm->x < p->mm->frame_thickness
-				|| p->mm->x >= p->mm->total_size - p->mm->frame_thickness)
-			{
-				p->mm->pos = (p->mm->y + p->mm->map_start_y) * WINDOW_WIDTH
-					+ (p->mm->x + p->mm->map_start_x);
-				if (p->mm->pos >= 0 && p->mm->pos < WINDOW_WIDTH
-					* WINDOW_HEIGHT)
-					p->screen_player[p->mm->pos] = 0x000000;
-			}
-			p->mm->x++;
+			p->mm->pos = (p->mm->y + p->mm->map_start_y) * WINDOW_WIDTH
+				+ (p->mm->x + p->mm->map_start_x);
+			if (p->mm->pos >= 0 && p->mm->pos < WINDOW_WIDTH
+				* WINDOW_HEIGHT)
+				p->screen_player[p->mm->pos] = 0x000000;
 		}
+		p->mm->x++;
+	}
 }
 
 void	mini_map_u2(t_player *p)

@@ -1,4 +1,27 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ybahij <ybahij@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/04 23:12:52 by ybahij            #+#    #+#             */
+/*   Updated: 2025/01/04 23:30:55 by ybahij           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../cub3d.h"
+
+void	move_player(t_player *player, float dx, float dy)
+{
+	float	new_px;
+	float	new_py;
+
+	new_px = player->px + dx;
+	new_py = player->py + dy;
+	move_player_1(player, new_px, new_py);
+	return ;
+}
 
 void	draw_mini_map(t_player *p)
 {
@@ -9,21 +32,22 @@ void	draw_mini_map(t_player *p)
 	mini_map_u3(p);
 	mini_map_u4(p);
 	mini_map_u7(p);
-    p->mm->i = -3;
-    while (p->mm->i <= 3)
-    {
-        p->mm->j = -3;
-        while (p->mm->j <= 3)
-        {
-            p->mm->pos = (p->mm->player_screen_y + p->mm->j) * WINDOW_WIDTH + (p->mm->player_screen_x + p->mm->i);
-            if (p->mm->pos >= 0 && p->mm->pos < WINDOW_WIDTH * WINDOW_HEIGHT)
-            {
-                p->screen_player[p->mm->pos] = 0xFF0000;
-            }
-            p->mm->j++;
-        }
-        p->mm->i++;
-    }
+	p->mm->i = -3;
+	while (p->mm->i <= 3)
+	{
+		p->mm->j = -3;
+		while (p->mm->j <= 3)
+		{
+			p->mm->pos = (p->mm->player_screen_y + p->mm->j) * WINDOW_WIDTH
+				+ (p->mm->player_screen_x + p->mm->i);
+			if (p->mm->pos >= 0 && p->mm->pos < WINDOW_WIDTH * WINDOW_HEIGHT)
+			{
+				p->screen_player[p->mm->pos] = 0xFF0000;
+			}
+			p->mm->j++;
+		}
+		p->mm->i++;
+	}
 }
 
 void	draw_3d_view(t_player *player)
@@ -32,7 +56,8 @@ void	draw_3d_view(t_player *player)
 	double		angle_increment;
 
 	set_img(player);
-	angle_increment = FOV / WINDOW_WIDTH;
+	player->fov = (60 * (PI / 180));
+	angle_increment = player->fov / WINDOW_WIDTH;
 	player->x = 0;
 	while (player->x < WINDOW_WIDTH)
 	{

@@ -1,4 +1,16 @@
-#include"../cub3d.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   key_press.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ybahij <ybahij@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/04 22:56:56 by ybahij            #+#    #+#             */
+/*   Updated: 2025/01/04 23:03:48 by ybahij           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "../cub3d.h"
 
 void	rotate_player(t_player *player, float angle)
 {
@@ -29,7 +41,6 @@ int	close_window(void *params)
 	t_player	*player;
 
 	player = (t_player *)params;
-
 	if (player->mlx_win)
 		mlx_destroy_window(player->mlx, player->mlx_win);
 	if (player->north_texture)
@@ -47,7 +58,6 @@ int	close_window(void *params)
 	garbage_collector();
 	exit(0);
 }
-
 
 int	key_press(int keycode, void *params)
 {
@@ -75,11 +85,8 @@ int	key_press(int keycode, void *params)
 	return (0);
 }
 
-void	move_player(t_player *player, float dx, float dy)
+void	move_player_1(t_player *player, float new_px, float new_py)
 {
-	float new_px, new_py;
-	new_px = player->px + dx;
-	new_py = player->py + dy;
 	if (player->map[(int)new_py][(int)new_px] != '1')
 	{
 		if (player->map[(int)new_py][(int)player->px] != '1'
@@ -103,5 +110,4 @@ void	move_player(t_player *player, float dx, float dy)
 			draw_3d_view(player);
 		}
 	}
-	return ;
 }
