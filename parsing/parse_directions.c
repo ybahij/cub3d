@@ -6,7 +6,7 @@
 /*   By: ansoulai <ansoulai@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/02 00:20:34 by ansoulai          #+#    #+#             */
-/*   Updated: 2025/01/06 03:20:56 by ansoulai         ###   ########.fr       */
+/*   Updated: 2025/01/06 05:23:34 by ansoulai         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,14 +45,6 @@ static int	check_duplicate_direction(t_player *player, char *line,
 	}
 	return (0);
 }
-char *skip_spaces(char *str) 
-{
-	if(!str)
-		return NULL;
-    while (*str && (*str == ' ' || *str == '\t'))
-        str++;
-    return str;
-}
 
 static int	process_single_direction(t_player *player, t_node *current,
 		int index)
@@ -70,7 +62,6 @@ int	parse_nodes_directions(t_node *head, t_player *player)
 {
 	t_node	*current;
 	int		i;
-
 
 	current = head;
 	i = 0;

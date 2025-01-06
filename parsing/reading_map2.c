@@ -6,7 +6,7 @@
 /*   By: ansoulai <ansoulai@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/02 04:18:55 by ansoulai          #+#    #+#             */
-/*   Updated: 2025/01/06 03:16:56 by ansoulai         ###   ########.fr       */
+/*   Updated: 2025/01/06 05:30:22 by ansoulai         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,13 +53,15 @@ void	add_line_to_list(t_node **head, char *line)
 	}
 }
 
-void	init_map_player(t_player *player)
+void	init_map_player(t_player *player, char *av)
 {
 	player->lines = NULL;
 	player->height = 0;
+	player->lines_read = 0;
+	player->fd_map = open_map_file(av);
 }
 
-void print_linked_list(t_node *head)
+void	print_linked_list(t_node *head)
 {
 	t_node	*temp;
 

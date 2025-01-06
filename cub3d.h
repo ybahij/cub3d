@@ -6,7 +6,7 @@
 /*   By: ansoulai <ansoulai@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/22 13:33:30 by ansoulai          #+#    #+#             */
-/*   Updated: 2025/01/06 03:09:31 by ansoulai         ###   ########.fr       */
+/*   Updated: 2025/01/06 05:31:14 by ansoulai         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,6 +101,8 @@ typedef struct s_player
 	int					w;
 	int					s;
 	int					r;
+	int					fd_map;
+	int					lines_read;
 	int					ceiling_color;
 	int					floor_color;
 	int					*color_f;
@@ -214,7 +216,7 @@ int						check_path_validity(char *path);
 int						parse_nodes_directions(t_node *head, t_player *player);
 void					reading_map(char *av, t_player *player);
 void					loop_map(t_player *player, int fd);
-void					init_map_player(t_player *player);
+void					init_map_player(t_player *player, char *av);
 void					check_path_with_access(char *path);
 int						is_valid_direction(char *line);
 int						process_direction_node(char *line, t_player *player,
@@ -267,6 +269,7 @@ void					mlx_(t_player *player);
 char					*get_pathe(t_player *player, char *path);
 void					map_height(t_player *player);
 char					*skip_spaces(char *str);
-void print_linked_list(t_node *head);
+void					print_linked_list(t_node *head);
+int						open_map_file(char *filename);
 
 #endif

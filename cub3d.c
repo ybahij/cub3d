@@ -6,7 +6,7 @@
 /*   By: ansoulai <ansoulai@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/22 13:33:20 by ansoulai          #+#    #+#             */
-/*   Updated: 2025/01/06 03:36:02 by ansoulai         ###   ########.fr       */
+/*   Updated: 2025/01/06 05:21:23 by ansoulai         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,6 @@ void	starter(char *av, t_player *player)
 {
 	check_path(av);
 	reading_map(av, player);
-	// check_pce(player);
 	map_2d(player);
 	check_walls(player);
 	fill_map(player);
@@ -83,7 +82,7 @@ int	main(int ac, char **av)
 	t_player	player;
 
 	if (ac != 2)
-		exit_w_message("Takes two arguments\n");
+		exit_w_message("Error\n Takes two arguments\n");
 	starter(av[1], &player);
 	get_player_position(&player);
 	set_angle(&player);

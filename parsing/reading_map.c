@@ -6,14 +6,13 @@
 /*   By: ansoulai <ansoulai@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/02 04:00:58 by ansoulai          #+#    #+#             */
-/*   Updated: 2025/01/06 03:51:13 by ansoulai         ###   ########.fr       */
+/*   Updated: 2025/01/06 05:32:25 by ansoulai         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../cub3d.h"
 
-//NORM == OK funct has 25 lines
-static int	open_map_file(char *filename)
+int	open_map_file(char *filename)
 {
 	int	fd;
 
@@ -50,37 +49,37 @@ static int	process_first_map_line(t_player *player, char *line)
 static int	parse_map_header(t_node *head, t_player *player)
 {
 	if (parse_nodes_directions(head, player))
-		exit_w_message("Error\n ctions\n");
-	if(parse_nodes_colors(head, player))
+		exit_w_message("Error\n directions\n");
+	if (parse_nodes_colors(head, player))
 		exit_w_message("Error\n Colors Structure \n");
 	return (0);
 }
 
 void	reading_map(char *av, t_player *player)
 {
-	int		fd;
 	char	*line;
 	t_node	*head;
-	int		lines_read;
+	char	*tmp;
 
 	head = NULL;
-	lines_read = 0;
-	init_map_player(player);
-	fd = open_map_file(av);
+	init_map_player(player, av);
 	while (1)
 	{
-		line = get_next_line(fd);
-		if (line == NULL || (ft_isdigit(line[0])
-				|| line[0] == '1'))
+		line = get_next_line(player->fd_map);
+		if (line == NULL || (ft_isdigit(line[0]) || line[0] == '1'))
 			break ;
-		if (line[0] != '\n' && line[0] != '\0')
+		tmp = skip_spaces(line);
+		if (*tmp != '\n' && *tmp != '\0')
 		{
+			line = tmp;
 			add_line_to_list(&head, line);
-			lines_read++;
+			player->lines_read++;
 		}
 	}
+	if (player->lines_read != 6)
+		exit_w_message("Error\n Map Invalid\n");
 	parse_map_header(head, player);
-	skip_empty_lines(fd, line);
+	skip_empty_lines(player->fd_map, line);
 	process_first_map_line(player, line);
-	loop_map(player, fd);
+	loop_map(player, player->fd_map);
 }

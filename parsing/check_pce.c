@@ -6,7 +6,7 @@
 /*   By: ansoulai <ansoulai@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/22 11:24:24 by ansoulai          #+#    #+#             */
-/*   Updated: 2025/01/06 03:51:34 by ansoulai         ###   ########.fr       */
+/*   Updated: 2025/01/06 05:21:31 by ansoulai         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,6 @@ void	initialize_pce(t_player *player)
 void	check_pce(t_player *player)
 {
 	initialize_pce(player);
-
 	while (player->map[player->i])
 	{
 		player->j = 0;

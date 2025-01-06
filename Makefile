@@ -1,6 +1,6 @@
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror #-fsanitize=address,undefined,leak -O0 -g3
+CFLAGS = -Wall -Wextra -Werror -fsanitize=address,undefined,leak -O0 -g3
 
 SRC = parsing/check_map.c parsing/parse_colors.c parsing/reading_map2.c parsing/reading_map.c parsing/parse_directions.c parsing/parse_directions2.c \
 	parsing/utils2.c parsing/ft_split.c parsing/check_pce.c parsing/parse_colors2.c cub3d.c parsing/utils.c\

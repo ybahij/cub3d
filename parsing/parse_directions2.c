@@ -6,7 +6,7 @@
 /*   By: ansoulai <ansoulai@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/02 00:25:07 by ansoulai          #+#    #+#             */
-/*   Updated: 2025/01/06 03:23:46 by ansoulai         ###   ########.fr       */
+/*   Updated: 2025/01/06 05:23:39 by ansoulai         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,4 +40,13 @@ int	process_direction_node(char *line, t_player *player, int index)
 		exit_w_message("Error\n Invalid path\n");
 	player->path[index] = split;
 	return (0);
+}
+
+char	*skip_spaces(char *str)
+{
+	if (!str)
+		return (NULL);
+	while (*str && (*str == ' ' || *str == '\t'))
+		str++;
+	return (str);
 }

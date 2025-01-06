@@ -6,7 +6,7 @@
 /*   By: ansoulai <ansoulai@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/02 00:23:29 by ansoulai          #+#    #+#             */
-/*   Updated: 2025/01/06 03:13:47 by ansoulai         ###   ########.fr       */
+/*   Updated: 2025/01/06 05:22:58 by ansoulai         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,8 +73,6 @@ int	parse_nodes_colors(t_node *head, t_player *player)
 		}
 		current = current->next;
 	}
-	// if (i != 6)
-	// 	exit_w_message("Error\n Invalid Map\n");
 	player->path[i] = NULL;
 	return (0);
 }
