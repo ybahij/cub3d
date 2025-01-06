@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cub3d.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ybahij <ybahij@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ansoulai <ansoulai@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/22 13:33:30 by ansoulai          #+#    #+#             */
-/*   Updated: 2025/01/04 23:34:00 by ybahij           ###   ########.fr       */
+/*   Updated: 2025/01/06 03:09:31 by ansoulai         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,9 +92,9 @@ typedef struct s_player
 	int					count_moves;
 	int					height;
 	int					width;
-	char				**path[5];
+	char				**path[7];
+	int					max_width;
 	int					i;
-
 	int					j;
 	int					n;
 	int					e;
@@ -261,5 +261,12 @@ void					move_player_1(t_player *player, float new_px,
 void					texture_draw(t_player *player, t_texture *texture,
 							int *tex_x);
 void					mini_map_set1(t_minimap *mm);
+void					trim_newline(char *str);
+void					*ft_memset(void *b, int c, size_t len);
+void					mlx_(t_player *player);
+char					*get_pathe(t_player *player, char *path);
+void					map_height(t_player *player);
+char					*skip_spaces(char *str);
+void print_linked_list(t_node *head);
 
 #endif

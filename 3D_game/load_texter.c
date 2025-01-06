@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   load_texter.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ybahij <ybahij@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ansoulai <ansoulai@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/04 23:04:45 by ybahij            #+#    #+#             */
-/*   Updated: 2025/01/04 23:11:12 by ybahij           ###   ########.fr       */
+/*   Updated: 2025/01/05 02:23:03 by ansoulai         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,13 +57,13 @@ void	load_textures(t_player *player)
 	player->screen_img = NULL;
 	player->screen_player = NULL;
 	player->north_texture = ft_malloc(sizeof(t_texture));
-	load_texter(player->north_texture, player, "textures/north.xpm");
+	load_texter(player->north_texture, player, get_pathe(player, "NO"));
 	player->south_texture = ft_malloc(sizeof(t_texture));
-	load_texter(player->south_texture, player, "textures/south.xpm");
+	load_texter(player->south_texture, player, get_pathe(player, "SO"));
 	player->west_texture = ft_malloc(sizeof(t_texture));
-	load_texter(player->west_texture, player, "textures/west.xpm");
+	load_texter(player->west_texture, player, get_pathe(player, "WE"));
 	player->east_texture = ft_malloc(sizeof(t_texture));
-	load_texter(player->east_texture, player, "textures/east.xpm");
+	load_texter(player->east_texture, player, get_pathe(player, "EA"));
 }
 
 void	set_img(t_player *player)

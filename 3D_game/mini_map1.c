@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   mini_map1.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ybahij <ybahij@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ansoulai <ansoulai@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/04 23:21:23 by ybahij            #+#    #+#             */
-/*   Updated: 2025/01/04 23:40:07 by ybahij           ###   ########.fr       */
+/*   Updated: 2025/01/05 02:23:12 by ansoulai         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,4 +78,17 @@ void	mini_map_u7(t_player *p)
 	p->mm->player_screen_y = p->mm->map_start_y + (p->mm->relative_player_y
 			* p->mm->tile_size) + p->mm->frame_thickness + (p->mm->tile_size
 			/ 2);
+}
+
+char	*get_pathe(t_player *player, char *path)
+{
+	if (ft_strncmp(path, "NO", 2) == 0)
+		return (player->path[0][1]);
+	else if (ft_strncmp(path, "SO", 2) == 0)
+		return (player->path[1][1]);
+	else if (ft_strncmp(path, "WE", 2) == 0)
+		return (player->path[2][1]);
+	else if (ft_strncmp(path, "EA", 2) == 0)
+		return (player->path[3][1]);
+	return (NULL);
 }

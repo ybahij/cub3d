@@ -2,8 +2,8 @@
 CC = cc
 CFLAGS = -Wall -Wextra -Werror #-fsanitize=address,undefined,leak -O0 -g3
 
-SRC = check_map.c parse_colors.c reading_map2.c reading_map.c parse_directions.c parse_directions2.c \
-	utils2.c ft_split.c check_pce.c parse_colors2.c cub3d.c utils.c\
+SRC = parsing/check_map.c parsing/parse_colors.c parsing/reading_map2.c parsing/reading_map.c parsing/parse_directions.c parsing/parse_directions2.c \
+	parsing/utils2.c parsing/ft_split.c parsing/check_pce.c parsing/parse_colors2.c cub3d.c parsing/utils.c\
 	includes/get_next_line.c   includes/get_next_line_utils.c\
 	3D_game/ft_malloc.c  3D_game/key_press.c  3D_game/load_texter.c  3D_game/main.c  3D_game/ray_caste.c\
 	3D_game/set_player.c 3D_game/mini_map.c 3D_game/mini_map1.c

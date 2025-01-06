@@ -6,7 +6,7 @@
 /*   By: ansoulai <ansoulai@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/20 12:23:23 by ansoulai          #+#    #+#             */
-/*   Updated: 2024/06/08 00:35:28 by ansoulai         ###   ########.fr       */
+/*   Updated: 2025/01/05 02:24:00 by ansoulai         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,8 @@ char	*ft_strjoin(char *archive, char *buff)
 		return (ft_strdup(buff));
 	if (!buff)
 		return (NULL);
-	str = ft_malloc(sizeof(char) * ((ft_strlen(archive) + ft_strlen(buff)) + 1));
+	str = ft_malloc(sizeof(char)
+			* ((ft_strlen(archive) + ft_strlen(buff)) + 1));
 	if (str == NULL)
 		return (NULL);
 	i = -1;
